@@ -1,0 +1,1108 @@
+import React, { useState, useEffect } from 'react';
+
+// Main App component
+const App = () => {
+    // State per la navigazione della pagina corrente
+    const [currentPage, setCurrentPage] = useState('flow'); // 'flow', 'ethical', 'community', 'immersive'
+
+    // State per l'Ottimizzazione del Flow
+    const [flowTask, setFlowTask] = useState('');
+    const [flowSessionActive, setFlowSessionActive] = useState(false);
+    const [flowTimeLeft, setFlowTimeLeft] = useState(0); // in secondi
+    const [flowAiResponse, setFlowAiResponse] = useState('');
+    const [flowLoading, setFlowLoading] = useState(false);
+    const [flowScore, setFlowScore] = useState(75); // Punteggio Flow simulato
+    const [flowTrend, setFlowTrend] = useState('up'); // Tendenza Flow simulata: 'up', 'down', 'stable'
+    // Dati indossabili simulati per lo Stato di Flow
+    const [heartRate, setHeartRate] = useState(70); // bpm
+    const [hrv, setHrv] = useState(50); // ms
+    // State per la simulazione di Web Worker
+    const [workerTaskStatus, setWorkerTaskStatus] = useState('');
+    const [workerTaskLoading, setWorkerTaskLoading] = useState(false);
+    // State per la simulazione di codice auto-riparante/adattivo
+    const [selfHealingMessage, setSelfHealingMessage] = useState('');
+    const [simulatedError, setSimulatedError] = useState(false);
+
+
+    // State per il Tracciamento Etico
+    const [productInput, setProductInput] = useState('');
+    const [productAiResponse, setProductAiResponse] = useState('');
+    const [productLoading, setProductLoading] = useState(false);
+    const [ethicalScore, setEthicalScore] = useState(0); // Punteggio Etico simulato (0-10)
+    const [cumulativeImpact, setCumulativeImpact] = useState(1250); // Impatto cumulativo simulato in kg CO2 risparmiati
+    // State per la simulazione AR (Fioritura Collettiva - Petali di Cambiamento)
+    const [showArOverlay, setShowArOverlay] = useState(false);
+    const [arAuraColor, setArAuraColor] = useState('gray'); // green, yellow, red
+    const [arSmilesCount, setArSmilesCount] = useState(0); // Contatore per i sorrisi AR
+    const [treesPlanted, setTreesPlanted] = useState(0); // Contatore per gli alberi piantati
+    // State per la Gestione dello Stato di Ispirazione Quantistica (simulata)
+    const [quantumSuggestion, setQuantumSuggestion] = useState('Clicca per una raccomandazione quantistica...');
+
+    // State per l'Hub Comunitario
+    const [communityProjectName, setCommunityProjectName] = useState('');
+    const [communityProjectDesc, setCommunityProjectDesc] = useState('');
+    // I progetti della comunità vengono ora caricati da localStorage, simulando la persistenza di IndexedDB
+    const [communityProjects, setCommunityProjects] = useState(() => {
+        const savedProjects = localStorage.getItem('evoflowCommunityProjects');
+        return savedProjects ? JSON.parse(savedProjects) : [
+            { id: 1, name: 'Pulizia Parco Urbano', description: 'Organizziamo una giornata per pulire il parco locale.', skillsNeeded: ['Volontariato', 'Organizzazione'] },
+            { id: 2, name: 'Orto Comunitario Digitale', description: 'Creiamo un orto urbano e una piattaforma per gestire la semina e la raccolta.', skillsNeeded: ['Giardinaggio', 'Sviluppo Web', 'Marketing'] },
+        ];
+    });
+    const [skillSwapSuggestions, setSkillSwapSuggestions] = useState([
+        { id: 1, skillOffered: 'Design Grafico', skillNeeded: 'Consulenza Legale', user: 'Laura' },
+        { id: 2, skillOffered: 'Coding Python', skillNeeded: 'Fotografia', user: 'Marco' },
+    ]);
+    // State per la Sfida Comunitaria (Fioritura Collettiva - #MissioneFioritura)
+    const [missionFiorituraProgress, setMissionFiorituraProgress] = useState(30); // % progresso
+    const [missionFiorituraTarget, setMissionFiorituraTarget] = useState(100); // % obiettivo
+
+    // State per la Gamification
+    const [userLevel, setUserLevel] = useState(1);
+    const [xp, setXp] = useState(0);
+    const [nextLevelXp, setNextLevelXp] = useState(100);
+    const [badges, setBadges] = useState([]); // Array di badge guadagnati
+    // State per le Ricompense d'Impatto ("Energie Solari")
+    const [solarEnergy, setSolarEnergy] = useState(0); // Valuta "Energie Solari"
+    const [isGreenGuardian, setIsGreenGuardian] = useState(false); // Aura digitale "Guardiano Verde"
+
+    // State per l'Algoritmo Genetico UI (simulato)
+    const [evolvableButtonDNA, setEvolvableButtonDNA] = useState({
+        color: Math.random(),
+        borderRadius: Math.random(),
+        padding: Math.random()
+    });
+
+    // State per lo Splitting del Bundle Guidato dalle Emozioni (simulato)
+    const [userEmotion, setUserEmotion] = useState('neutro');
+    const [uiVersion, setUiVersion] = useState('standard');
+
+    // State per la casella di messaggio personalizzata (sostituisce alert/confirm per una migliore UX in un iFrame)
+    const [messageBox, setMessageBox] = useState({ show: false, title: '', content: '' });
+
+    // State per il Coinvolgimento Consapevole ("Tempo Ben Speso" - Foglie Digitali)
+    const [digitalLeaves, setDigitalLeaves] = useState(0);
+    const [amazonProtectedHectares, setAmazonProtectedHectares] = useState(0);
+    const [meditationUnlocked, setMeditationUnlocked] = useState(false);
+    const [ecoDesignCourseUnlocked, setEcoDesignCourseUnlocked] = useState(false);
+
+    // State per le Storie in Diretta ("Eco-Hero Live")
+    const [ecoHeroLiveViews, setEcoHeroLiveViews] = useState(0);
+    const [waterSourcesFunded, setWaterSourcesFunded] = useState(0);
+
+    // Funzione per mostrare la casella di messaggio personalizzata
+    const showMessageBox = (title, content) => {
+        setMessageBox({ show: true, title, content });
+    };
+
+    // Funzione per nascondere la casella di messaggio personalizzata
+    const hideMessageBox = () => {
+        setMessageBox({ show: false, title: '', content: '' });
+    };
+
+    // Effetto per caricare i dati persistenti da localStorage all'avvio dell'app (simulando IndexedDB)
+    useEffect(() => {
+        const lastFlowResponse = localStorage.getItem('lastFlowAiResponse');
+        if (lastFlowResponse) {
+            setFlowAiResponse(lastFlowResponse);
+        }
+        const lastProductResponse = localStorage.getItem('lastProductAiResponse');
+        if (lastProductResponse) {
+            setProductAiResponse(lastProductResponse);
+            const scoreMatch = lastProductResponse.match(/Punteggio: (\d+)\/10/);
+            if (scoreMatch && scoreMatch[1]) {
+                setEthicalScore(parseInt(scoreMatch[1], 10));
+            }
+        }
+        const savedSolarEnergy = localStorage.getItem('evoflowSolarEnergy');
+        if (savedSolarEnergy) setSolarEnergy(parseInt(savedSolarEnergy, 10));
+        const savedDigitalLeaves = localStorage.getItem('evoflowDigitalLeaves');
+        if (savedDigitalLeaves) setDigitalLeaves(parseInt(savedDigitalLeaves, 10));
+        const savedTreesPlanted = localStorage.getItem('evoflowTreesPlanted');
+        if (savedTreesPlanted) setTreesPlanted(parseInt(savedTreesPlanted, 10));
+        const savedWaterSources = localStorage.getItem('evoflowWaterSources');
+        if (savedWaterSources) setWaterSourcesFunded(parseInt(savedWaterSources, 10));
+        const savedGreenGuardian = localStorage.getItem('evoflowGreenGuardian');
+        if (savedGreenGuardian) setIsGreenGuardian(JSON.parse(savedGreenGuardian));
+
+    }, []); // Esegui solo una volta al montaggio del componente
+
+    // Effetto per il timer di Ottimizzazione del Flow
+    useEffect(() => {
+        let timer;
+        if (flowSessionActive && flowTimeLeft > 0) {
+            timer = setInterval(() => {
+                setFlowTimeLeft((prevTime) => prevTime - 1);
+                // Simula i cambiamenti dei dati indossabili durante la sessione
+                setHeartRate(Math.floor(60 + Math.random() * 20)); // 60-80 bpm
+                setHrv(Math.floor(40 + Math.random() * 20)); // 40-60 ms
+
+                // Coinvolgimento Consapevole: Guadagna foglie digitali in base al tempo trascorso
+                if (flowTimeLeft % 60 === 0 && flowTimeLeft !== 0) { // Ogni minuto
+                    setDigitalLeaves(prev => prev + 1);
+                }
+            }, 1000);
+        } else if (flowTimeLeft === 0 && flowSessionActive) {
+            setFlowSessionActive(false);
+            setFlowAiResponse("Sessione di flow completata! Ottimo lavoro. Ricorda di fare una pausa.");
+            const newFlowScore = Math.min(100, flowScore + 5 + Math.floor(Math.random() * 5));
+            setFlowScore(newFlowScore);
+            setFlowTrend('up');
+            const earnedXp = 20 + Math.floor(Math.random() * 10);
+            setXp(prevXp => prevXp + earnedXp);
+        }
+        return () => clearInterval(timer);
+    }, [flowSessionActive, flowTimeLeft, flowScore]);
+
+    // Effetto per il Livellamento della Gamification
+    useEffect(() => {
+        if (xp >= nextLevelXp) {
+            setUserLevel(prevLevel => prevLevel + 1);
+            setXp(prevXp => prevXp - nextLevelXp);
+            setNextLevelXp(prevNextLevelXp => Math.floor(prevNextLevelXp * 1.5)); // Aumenta l'XP necessario per il livello successivo
+            setBadges(prevBadges => [...prevBadges, `Livello ${userLevel + 1} Raggiunto`]);
+            if (userLevel + 1 >= 5 && !isGreenGuardian) { // Esempio: Diventa Guardiano Verde al Livello 5
+                setIsGreenGuardian(true);
+                showMessageBox("Complimenti!", "Hai sbloccato l'Aura digitale 'Guardiano Verde'!");
+            }
+        }
+    }, [xp, nextLevelXp, userLevel, isGreenGuardian]);
+
+    // Effetto per l'UI Guidato dalle Emozioni (simulato)
+    useEffect(() => {
+        if (userEmotion === 'frustrated') {
+            setUiVersion('semplificata');
+        } else if (userEmotion === 'focused') {
+            setUiVersion('avanzata');
+        } else {
+            setUiVersion('standard');
+        }
+    }, [userEmotion]);
+
+    // Effetto per persistere i dati in localStorage
+    useEffect(() => {
+        localStorage.setItem('evoflowCommunityProjects', JSON.stringify(communityProjects));
+        localStorage.setItem('evoflowSolarEnergy', solarEnergy.toString());
+        localStorage.setItem('evoflowDigitalLeaves', digitalLeaves.toString());
+        localStorage.setItem('evoflowTreesPlanted', treesPlanted.toString());
+        localStorage.setItem('evoflowWaterSources', waterSourcesFunded.toString());
+        localStorage.setItem('evoflowGreenGuardian', JSON.stringify(isGreenGuardian));
+        // Controlla lo sblocco della protezione dell'Amazzonia
+        if (digitalLeaves >= 1000 && amazonProtectedHectares < Math.floor(digitalLeaves / 1000)) {
+            setAmazonProtectedHectares(Math.floor(digitalLeaves / 1000));
+            showMessageBox("Grande Impatto!", `Hai protetto ${Math.floor(digitalLeaves / 1000)} ettaro/i di Amazzonia!`);
+        }
+        // Sblocca meditazioni/corsi
+        if (digitalLeaves >= 200 && !meditationUnlocked) setMeditationUnlocked(true);
+        if (digitalLeaves >= 500 && !ecoDesignCourseUnlocked) setEcoDesignCourseUnlocked(true);
+
+    }, [communityProjects, solarEnergy, digitalLeaves, treesPlanted, waterSourcesFunded, isGreenGuardian, amazonProtectedHectares, meditationUnlocked, ecoDesignCourseUnlocked]);
+
+
+    // Funzione per formattare il tempo per la visualizzazione del timer
+    const formatTime = (seconds) => {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    };
+
+    // Simula la chiamata AI per l'Ottimizzazione del Flow (concetto di Lazy AI)
+    const startFlowSession = async () => {
+        if (!flowTask) {
+            setFlowAiResponse("Per favore, inserisci un compito per iniziare la sessione.");
+            return;
+        }
+
+        setFlowLoading(true);
+        setFlowAiResponse('Caricamento modello AI per l\'ottimizzazione del flow...'); // Messaggio di simulazione Lazy AI
+        setFlowSessionActive(false); // Resetta la sessione se attiva
+        setFlowTrend('stable'); // Resetta la tendenza all'avvio di una nuova sessione
+
+        // Simula il ritardo di caricamento del modello "Lazy AI"
+        await new Promise(resolve => setTimeout(resolve, 1500)); // Ritardo di 1.5 secondi
+
+        try {
+            const prompt = `Considerando che l'utente è al livello ${userLevel} e ha un punteggio flow attuale di ${flowScore}, suggerisci una sessione di "deep work" ottimizzata per il compito: "${flowTask}". Includi una durata consigliata (in minuti) e un breve consiglio per la produttività, adattato al suo livello di esperienza. Formatta la risposta come: "Durata: X minuti. Consiglio: Y"`;
+            let chatHistory = [];
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+            const payload = { contents: chatHistory };
+            const apiKey = ""; // La chiave API sarà fornita dal runtime di Canvas
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+            if (result.candidates && result.candidates.length > 0 &&
+                result.candidates[0].content && result.candidates[0].content.parts &&
+                result.candidates[0].content.parts.length > 0) {
+                const text = result.candidates[0].content.parts[0].text;
+                setFlowAiResponse(text);
+                localStorage.setItem('lastFlowAiResponse', text); // Persisti la risposta
+
+                const durationMatch = text.match(/Durata: (\d+) minuti/);
+                if (durationMatch && durationMatch[1]) {
+                    const durationMinutes = parseInt(durationMatch[1], 10);
+                    setFlowTimeLeft(durationMinutes * 60);
+                    setFlowSessionActive(true);
+                } else {
+                    setFlowTimeLeft(25 * 60); // Default a 25 minuti se il parsing fallisce
+                    setFlowSessionActive(true);
+                }
+            } else {
+                setFlowAiResponse("Ops! Non sono riuscito a generare una risposta. Riprova.");
+            }
+        } catch (error) {
+            console.error("Errore durante la chiamata AI per l'Ottimizzazione del Flow:", error);
+            setFlowAiResponse("Si è verificato un errore durante la comunicazione con l'AI.");
+        } finally {
+            setFlowLoading(false);
+        }
+    };
+
+    // Simula la chiamata AI per il Tracciamento Etico (concetto di Lazy AI)
+    const trackProduct = async () => {
+        if (!productInput) {
+            setProductAiResponse("Per favore, inserisci un nome prodotto o codice a barre.");
+            return;
+        }
+
+        setProductLoading(true);
+        setProductAiResponse('Caricamento modello AI per l\'analisi etica...'); // Messaggio di simulazione Lazy AI
+        setEthicalScore(0); // Resetta il punteggio prima del nuovo tracciamento
+        setShowArOverlay(false); // Nascondi l'overlay AR inizialmente
+
+        // Simula il ritardo di caricamento del modello "Lazy AI"
+        await new Promise(resolve => setTimeout(resolve, 1500)); // Ritardo di 1.5 secondi
+
+        try {
+            const prompt = `Fornisci un "Punteggio di Impatto Etico" (da 1 a 10, dove 10 è il migliore) per il prodotto "${productInput}". Descrivi brevemente perché ha quel punteggio e suggerisci un'alternativa più sostenibile. Includi anche dati 3D simulati come emissioni CO2 (es. X kg), acqua consumata (es. Y litri). Formatta la risposta come: "Punteggio: X/10. Motivo: Y. Alternativa sostenibile: Z. Dati 3D: CO2: A kg, Acqua: B litri"`;
+            let chatHistory = [];
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+            const payload = { contents: chatHistory };
+            const apiKey = ""; // La chiave API sarà fornita dal runtime di Canvas
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+            if (result.candidates && result.candidates.length > 0 &&
+                result.candidates[0].content && result.candidates[0].content.parts &&
+                result.candidates[0].content.parts.length > 0) {
+                const text = result.candidates[0].content.parts[0].text;
+                setProductAiResponse(text);
+                localStorage.setItem('lastProductAiResponse', text); // Persisti la risposta
+
+                const scoreMatch = text.match(/Punteggio: (\d+)\/10/);
+                if (scoreMatch && scoreMatch[1]) {
+                    const score = parseInt(scoreMatch[1], 10);
+                    setEthicalScore(score);
+                    if (score >= 7) {
+                        setCumulativeImpact(prev => prev + (score * 10));
+                        setXp(prevXp => prevXp + 15);
+                        setSolarEnergy(prev => prev + 10); // Guadagna Energia Solare per una buona scelta etica
+                        setArAuraColor('green');
+                    } else if (score >= 5) {
+                        setArAuraColor('yellow');
+                    } else {
+                        setArAuraColor('red');
+                    }
+                    setShowArOverlay(true);
+                }
+            } else {
+                setProductAiResponse("Ops! Non sono riuscito a generare una risposta. Riprova.");
+            }
+        } catch (error) {
+            console.error("Errore durante la chiamata AI per il Tracciamento Etico:", error);
+            setProductAiResponse("Si è verificato un errore durante la comunicazione con l'AI.");
+        } finally {
+            setProductLoading(false);
+        }
+    };
+
+    // Simula la Gestione dello Stato di Ispirazione Quantistica
+    const collapseQuantumSuggestion = () => {
+        const options = [
+            { text: "Raccomandazione: Prodotto locale a km 0", prob: 0.4 },
+            { text: "Raccomandazione: Alternativa riciclabile al 100%", prob: 0.3 },
+            { text: "Raccomandazione: Servizio di riparazione per il tuo prodotto attuale", prob: 0.2 },
+            { text: "Raccomandazione: Donazione a un'organizzazione ambientale", prob: 0.1 },
+        ];
+        let rand = Math.random();
+        let chosen = "Nessuna raccomandazione al momento.";
+        for (const option of options) {
+            if (rand < option.prob) {
+                chosen = option.text;
+                break;
+            }
+            rand -= option.prob;
+        }
+        setQuantumSuggestion(chosen);
+    };
+
+    // Simula l'Algoritmo Genetico per la Generazione dell'UI
+    const mutateEvolvableButton = () => {
+        setEvolvableButtonDNA(prev => ({
+            color: (prev.color + Math.random() * 0.1 - 0.05 + 1) % 1,
+            borderRadius: (prev.borderRadius + Math.random() * 0.2 - 0.1 + 1) % 1,
+            padding: (prev.padding + Math.random() * 0.2 - 0.1 + 1) % 1
+        }));
+    };
+
+    // Simula la Sonificazione dell'Esecuzione del Codice
+    const sonifyDataLoad = () => {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        oscillator.type = 'sine';
+        oscillator.connect(audioCtx.destination);
+
+        const success = Math.random() > 0.5;
+
+        if (success) {
+            oscillator.frequency.value = 440; // A4
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.2);
+            showMessageBox("Caricamento Dati", "Dati caricati con successo! (Suono: A4)");
+        } else {
+            oscillator.frequency.value = 220; // A3
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.5);
+            showMessageBox("Caricamento Dati", "Caricamento dati fallito. (Suono: A3)");
+        }
+    };
+
+    // Simula il Pool di Web Worker per Compiti Intensivi della CPU
+    const simulateHeavyCalculation = () => {
+        setWorkerTaskLoading(true);
+        setWorkerTaskStatus('Calcolo complesso in corso (non blocca la UI)...');
+
+        setTimeout(() => {
+            let result = 0;
+            for (let i = 0; i < 100000000; i++) {
+                result += Math.sqrt(i);
+            }
+            setWorkerTaskStatus(`Calcolo completato nel "worker"! Risultato: ${result.toFixed(2)}`);
+            setWorkerTaskLoading(false);
+        }, 300);
+    };
+
+    // Simula il Codice Auto-Riparatore/Adattivo (Correzione degli Errori basata su Rete Neurale)
+    const triggerSimulatedError = () => {
+        setSimulatedError(true);
+        setSelfHealingMessage('Errore rilevato! Il sistema sta tentando l\'auto-correzione...');
+        setTimeout(() => {
+            setSimulatedError(false);
+            setSelfHealingMessage('Auto-correzione completata. Funzionalità ripristinata!');
+            setTimeout(() => setSelfHealingMessage(''), 3000);
+        }, 2000);
+    };
+
+    // Simula l'interazione del filtro AR (Fioritura Collettiva - Petali di Cambiamento)
+    const takeArSelfie = () => {
+        setArSmilesCount(prev => prev + 1);
+        setSolarEnergy(prev => prev + 5); // Guadagna Energia Solare per l'interazione AR
+        showMessageBox("Fioritura Collettiva", "Grazie per il tuo sorriso! Hai contribuito a piantare alberi!");
+        if ((arSmilesCount + 1) % 100 === 0) { // Ogni 100 sorrisi = 1 albero
+            setTreesPlanted(prev => prev + 1);
+            showMessageBox("Grande Impatto!", `Hai contribuito a piantare ${treesPlanted + 1} albero/i!`);
+        }
+    };
+
+    // Simula il contributo alla Sfida Comunitaria (Fioritura Collettiva - #MissioneFioritura)
+    const contributeToChallenge = () => {
+        const contribution = Math.floor(Math.random() * 10) + 5; // Simula un contributo del 5-15%
+        setMissionFiorituraProgress(prev => Math.min(100, prev + contribution));
+        setXp(prevXp => prevXp + 10); // Assegna XP per il contributo alla sfida
+        setSolarEnergy(prev => prev + 20); // Guadagna Energia Solare per il contributo alla sfida
+        showMessageBox("Missione Fioritura", `Hai contribuito alla sfida! Progresso attuale: ${Math.min(100, missionFiorituraProgress + contribution)}%`);
+    };
+
+    // Simula la documentazione del riciclo (Ricompense d'Impatto)
+    const documentRecycling = () => {
+        setSolarEnergy(prev => prev + 10);
+        setXp(prevXp => prevXp + 5);
+        showMessageBox("Ricompense d'Impatto", "Riciclo documentato! Hai guadagnato 10 Energie Solari.");
+    };
+
+    // Simula il volontariato digitale (Ricompense d'Impatto)
+    const doDigitalVolunteering = () => {
+        setSolarEnergy(prev => prev + 50);
+        setXp(prevXp => prevXp + 25);
+        showMessageBox("Ricompense d'Impatto", "Volontariato digitale completato! Hai guadagnato 50 Energie Solari.");
+    };
+
+    // Simula la visualizzazione di Eco-Hero Live (Storie in Diretta)
+    const viewEcoHeroLive = () => {
+        setEcoHeroLiveViews(prev => prev + 100); // Simula 100 visualizzazioni per click
+        setDigitalLeaves(prev => prev + 5); // Guadagna foglie per la visualizzazione
+        if ((ecoHeroLiveViews + 100) % 1000 === 0) { // Ogni 1000 visualizzazioni = 1 fonte d'acqua
+            setWaterSourcesFunded(prev => prev + 1);
+            showMessageBox("Impatto Reale!", `Hai contribuito a finanziare ${waterSourcesFunded + 1} fonte potabile!`);
+        }
+        showMessageBox("Storie in Diretta", "Stai supportando un Eco-Hero! Le tue visualizzazioni fanno la differenza.");
+    };
+
+
+    // Gestisce l'aggiunta di un nuovo progetto comunitario
+    const handleAddCommunityProject = (e) => {
+        e.preventDefault();
+        if (communityProjectName && communityProjectDesc) {
+            setCommunityProjects([
+                ...communityProjects,
+                { id: communityProjects.length + 1, name: communityProjectName, description: communityProjectDesc, skillsNeeded: ['Generico'] }
+            ]);
+            setCommunityProjectName('');
+            setCommunityProjectDesc('');
+            setXp(prevXp => prevXp + 25); // Assegna XP per il contributo alla comunità
+            setBadges(prevBadges => [...prevBadges, `Progetto Comunitario Aggiunto`]);
+            setSolarEnergy(prev => prev + 30); // Guadagna Energia Solare per l'aggiunta del progetto
+        }
+    };
+
+    // Icone per la navigazione (utilizzando SVG inline per semplicità e coerenza)
+    const FlowIcon = ({ className }) => (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+        </svg>
+    );
+
+    const EthicalIcon = ({ className }) => (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.001 12.001 0 002.944 12c0 2.892 1.144 5.618 3.04 8.618A11.955 11.955 0 0112 21.056a11.955 11.955 0 018.618-3.04A12.001 12.001 0 0021.056 12c0-2.892-1.144-5.618-3.04-8.618z"></path>
+        </svg>
+    );
+
+    const CommunityIcon = ({ className }) => (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2v10a2 2 0 002 2zM9 13h2m-2 7h2m-2-7v7m0-7a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2v10a2 2 0 01-2 2z"></path>
+        </svg>
+    );
+
+    const ImmersiveIcon = ({ className }) => (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 10a1 1 0 100-2 1 1 0 000 2zm6 0a1 1 0 100-2 1 1 0 000 2zm-9 6h.01M15 16h.01M12 12a4 4 0 100 8 4 4 0 000-8z"></path>
+        </svg>
+    );
+
+    // Helper per il colore del Punteggio Etico
+    const getEthicalScoreColor = (score) => {
+        if (score >= 8) return 'text-green-600';
+        if (score >= 5) return 'text-yellow-600';
+        if (score > 0) return 'text-red-600';
+        return 'text-gray-500';
+    };
+
+    // Helper per la classe del colore dell'aura AR
+    const getArAuraClass = (color) => {
+        switch (color) {
+            case 'green': return 'shadow-[0_0_20px_10px_rgba(34,197,94,0.7)]'; // Tailwind green-500
+            case 'yellow': return 'shadow-[0_0_20px_10px_rgba(234,179,8,0.7)]'; // Tailwind yellow-500
+            case 'red': return 'shadow-[0_0_20px_10px_rgba(239,68,68,0.7)]'; // Tailwind red-500
+            default: return '';
+        }
+    };
+
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 font-inter antialiased flex flex-col">
+            {/* Casella di Messaggio Personalizzata */}
+            {messageBox.show && (
+                <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white p-6 rounded-xl shadow-2xl max-w-sm w-full text-center transform transition-all duration-300 scale-105">
+                        <h3 className="text-2xl font-bold text-gray-800 mb-4">{messageBox.title}</h3>
+                        <p className="text-gray-700 mb-6">{messageBox.content}</p>
+                        <button
+                            onClick={hideMessageBox}
+                            className="bg-indigo-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-indigo-700 transition-all duration-300 shadow-md"
+                        >
+                            Chiudi
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Intestazione */}
+            <header className="bg-white shadow-lg p-4 md:p-6 rounded-b-3xl">
+                <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 text-center bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">EvoFlow AI</h1>
+                <p className="text-lg md:text-xl text-gray-600 text-center mt-2">Il tuo ecosistema di crescita intuitiva e consapevole</p>
+            </header>
+
+            {/* Dashboard Gamification (Barra Superiore) */}
+            <div className="bg-gray-800 text-white p-4 flex flex-col md:flex-row justify-between items-center text-sm md:text-base shadow-xl rounded-xl mx-4 mt-4">
+                <div className="flex items-center space-x-3 mb-2 md:mb-0">
+                    <span className="font-semibold text-lg">Livello: {userLevel}</span>
+                    <div className="w-32 bg-gray-600 rounded-full h-3">
+                        <div className="bg-green-400 h-3 rounded-full transition-all duration-500 ease-out" style={{ width: `${(xp / nextLevelXp) * 100}%` }}></div>
+                    </div>
+                    <span className="text-gray-300">XP: {xp}/{nextLevelXp}</span>
+                </div>
+                <div className="flex items-center space-x-3 mb-2 md:mb-0">
+                    <span className="font-semibold text-lg">Badge:</span>
+                    {badges.length > 0 ? (
+                        <div className="flex -space-x-1 overflow-hidden">
+                            {badges.map((badge, index) => (
+                                <span key={index} className="inline-block h-8 w-8 rounded-full bg-blue-500 text-white text-sm flex items-center justify-center ring-2 ring-gray-800 font-bold" title={badge}>
+                                    {badge.charAt(0)}
+                                </span>
+                            ))}
+                        </div>
+                    ) : (
+                        <span className="text-gray-400 text-sm">Nessuno</span>
+                    )}
+                </div>
+                {/* Ricompense d'Impatto - Energie Solari */}
+                <div className="flex items-center space-x-3">
+                    <span className="font-semibold text-lg">Energie Solari: {solarEnergy}</span>
+                    {isGreenGuardian && (
+                        <span className="text-green-400 text-2xl animate-pulse" title="Guardiano Verde Aura">✨</span>
+                    )}
+                </div>
+            </div>
+
+            {/* Navigazione */}
+            <nav className="bg-white shadow-lg p-4 rounded-3xl mx-4 md:mx-auto mt-6 max-w-4xl">
+                <ul className="flex justify-around space-x-2 md:space-x-4">
+                    <li>
+                        <button
+                            onClick={() => setCurrentPage('flow')}
+                            className={`flex flex-col items-center p-3 rounded-xl transition-all duration-300 transform hover:scale-105 ${
+                                currentPage === 'flow' ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg' : 'text-gray-700 hover:bg-indigo-50'
+                            }`}
+                        >
+                            <FlowIcon className="w-7 h-7 md:w-8 md:h-8" />
+                            <span className="text-xs md:text-sm mt-1 font-medium">Flow</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button
+                            onClick={() => setCurrentPage('ethical')}
+                            className={`flex flex-col items-center p-3 rounded-xl transition-all duration-300 transform hover:scale-105 ${
+                                currentPage === 'ethical' ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg' : 'text-gray-700 hover:bg-indigo-50'
+                            }`}
+                        >
+                            <EthicalIcon className="w-7 h-7 md:w-8 md:h-8" />
+                            <span className="text-xs md:text-sm mt-1 font-medium">Etica</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button
+                            onClick={() => setCurrentPage('community')}
+                            className={`flex flex-col items-center p-3 rounded-xl transition-all duration-300 transform hover:scale-105 ${
+                                currentPage === 'community' ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg' : 'text-gray-700 hover:bg-indigo-50'
+                            }`}
+                        >
+                            <CommunityIcon className="w-7 h-7 md:w-8 md:h-8" />
+                            <span className="text-xs md:text-sm mt-1 font-medium">Community</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button
+                            onClick={() => setCurrentPage('immersive')}
+                            className={`flex flex-col items-center p-3 rounded-xl transition-all duration-300 transform hover:scale-105 ${
+                                currentPage === 'immersive' ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg' : 'text-gray-700 hover:bg-indigo-50'
+                            }`}
+                        >
+                            <ImmersiveIcon className="w-7 h-7 md:w-8 md:h-8" />
+                            <span className="text-xs md:text-sm mt-1 font-medium">Immersivo</span>
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+
+            {/* Area Contenuto Principale */}
+            <main className="flex-grow p-4 md:p-6 flex justify-center items-start">
+                <div className="bg-white shadow-2xl rounded-3xl p-6 md:p-10 w-full max-w-5xl">
+                    {/* Sezione Ottimizzazione del Flow */}
+                    {currentPage === 'flow' && (
+                        <section className="space-y-8">
+                            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-700">Ottimizzazione dello "Stato di Flow"</h2>
+                            <p className="text-gray-600 text-center mb-8 text-lg">Massimizza la concentrazione e previene il burnout con l'AI.</p>
+
+                            {/* Dashboard Punteggio Flow */}
+                            <div className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white p-8 rounded-2xl shadow-xl flex flex-col items-center justify-center">
+                                <p className="text-2xl font-semibold opacity-90 mb-4">Il tuo Punteggio Flow Attuale</p>
+                                <div className="relative w-40 h-40 md:w-48 md:h-48 my-4">
+                                    <svg className="w-full h-full" viewBox="0 0 100 100">
+                                        <circle cx="50" cy="50" r="45" fill="none" stroke="#ffffff40" strokeWidth="8"></circle>
+                                        <circle
+                                            cx="50"
+                                            cy="50"
+                                            r="45"
+                                            fill="none"
+                                            stroke="#fff"
+                                            strokeWidth="8"
+                                            strokeDasharray={`${flowScore * 2.827} 282.7`} /* 2*PI*R = 2*3.1415*45 = 282.7 */
+                                            strokeLinecap="round"
+                                            transform="rotate(-90 50 50)"
+                                            className="transition-all duration-1000 ease-in-out"
+                                        ></circle>
+                                        <text x="50" y="55" textAnchor="middle" className="text-5xl font-extrabold" fill="#fff">{flowScore}</text>
+                                    </svg>
+                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-20 text-center">
+                                        <span className={`text-base font-semibold ${flowTrend === 'up' ? 'text-green-300' : flowTrend === 'down' ? 'text-red-300' : 'text-gray-300'}`}>
+                                            {flowTrend === 'up' && 'In Crescita ▲'}
+                                            {flowTrend === 'down' && 'In Calo ▼'}
+                                            {flowTrend === 'stable' && 'Stabile ▬'}
+                                        </span>
+                                    </div>
+                                </div>
+                                <p className="text-base opacity-90 text-center mt-2">Un punteggio più alto indica una maggiore concentrazione e benessere.</p>
+
+                                {/* Indicatori Dati Indossabili (Simulati) */}
+                                <div className="mt-6 flex justify-center space-x-8 text-white">
+                                    <div className="flex flex-col items-center">
+                                        <span className="text-2xl font-bold">{heartRate} bpm</span>
+                                        <span className="text-sm opacity-80">Frequenza Cardiaca</span>
+                                    </div>
+                                    <div className="flex flex-col items-center">
+                                        <span className="text-2xl font-bold">{hrv} ms</span>
+                                        <span className="text-sm opacity-80">HRV (Variabilità)</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col md:flex-row gap-6 mt-8">
+                                <input
+                                    type="text"
+                                    placeholder="Qual è il tuo compito attuale?"
+                                    value={flowTask}
+                                    onChange={(e) => setFlowTask(e.target.value)}
+                                    className="flex-grow p-4 border border-gray-300 rounded-xl focus:ring-4 focus:ring-indigo-300 focus:border-indigo-500 transition-all duration-300 text-lg shadow-sm"
+                                />
+                                <button
+                                    onClick={startFlowSession}
+                                    disabled={flowLoading || flowSessionActive}
+                                    className="bg-gradient-to-r from-indigo-600 to-purple-700 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:from-indigo-700 hover:to-purple-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-lg"
+                                >
+                                    {flowLoading ? (
+                                        <svg className="animate-spin h-6 w-6 text-white mr-3" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                    ) : (
+                                        'Avvia Sessione Flow'
+                                    )}
+                                </button>
+                            </div>
+
+                            {flowSessionActive && (
+                                <div className="mt-8 p-6 bg-indigo-50 border border-indigo-200 rounded-2xl text-center shadow-inner-lg">
+                                    <p className="text-xl font-semibold text-indigo-800">Sessione in corso per: <span className="font-bold">{flowTask}</span></p>
+                                    <p className="text-6xl md:text-7xl font-extrabold text-indigo-700 mt-4 animate-pulse">{formatTime(flowTimeLeft)}</p>
+                                    <p className="text-indigo-600 mt-4 text-base md:text-lg">{flowAiResponse.split('Consiglio: ')[1] || "Concentrati e dai il massimo!"}</p>
+                                </div>
+                            )}
+
+                            {flowAiResponse && !flowSessionActive && !flowLoading && (
+                                <div className="mt-8 p-6 bg-blue-50 border border-blue-200 rounded-2xl shadow-md">
+                                    <p className="text-blue-800 font-medium whitespace-pre-wrap text-base">{flowAiResponse}</p>
+                                </div>
+                            )}
+
+                            {/* Algoritmo Genetico Simulato per la Generazione dell'UI */}
+                            <div className="mt-10 p-8 bg-gray-50 rounded-2xl shadow-lg text-center border border-gray-200">
+                                <h3 className="text-2xl font-bold text-gray-800 mb-4">Pulsante Evolutivo (Algoritmo Genetico Simulato)</h3>
+                                <p className="text-gray-600 mb-6 text-base">Questo pulsante si "evolve" ad ogni click, simulando un algoritmo genetico per l'ottimizzazione dell'interfaccia.</p>
+                                <button
+                                    onClick={mutateEvolvableButton}
+                                    style={{
+                                        backgroundColor: `hsl(${evolvableButtonDNA.color * 360}, 70%, 50%)`,
+                                        borderRadius: `${evolvableButtonDNA.borderRadius * 20 + 10}px`, // Assicura un raggio minimo di 10px
+                                        padding: `${12 + evolvableButtonDNA.padding * 16}px ${24 + evolvableButtonDNA.padding * 24}px`, // Assicura un padding minimo
+                                        color: 'white',
+                                        fontWeight: 'bold',
+                                        transition: 'all 0.5s ease-in-out',
+                                        fontSize: '1.125rem' // text-lg
+                                    }}
+                                    className="shadow-xl hover:shadow-2xl transform hover:scale-105"
+                                >
+                                    Mutami!
+                                </button>
+                            </div>
+
+                            {/* Pool di Web Worker Simulato per Compiti Intensivi della CPU */}
+                            <div className="mt-10 p-8 bg-gray-50 rounded-2xl shadow-lg text-center border border-gray-200">
+                                <h3 className="text-2xl font-bold text-gray-800 mb-4">Calcolo Complesso in Background (Worker Simulato)</h3>
+                                <p className="text-gray-600 mb-6 text-base">Simula un'operazione intensiva che non blocca l'interfaccia utente.</p>
+                                <button
+                                    onClick={simulateHeavyCalculation}
+                                    disabled={workerTaskLoading}
+                                    className="bg-gradient-to-r from-orange-500 to-red-600 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:from-orange-600 hover:to-red-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center mx-auto text-lg"
+                                >
+                                    {workerTaskLoading ? (
+                                        <svg className="animate-spin h-6 w-6 text-white mr-3" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                    ) : (
+                                        'Avvia Calcolo'
+                                    )}
+                                </button>
+                                {workerTaskStatus && (
+                                    <p className="mt-6 text-base text-gray-700">{workerTaskStatus}</p>
+                                )}
+                            </div>
+                        </section>
+                    )}
+
+                    {/* Sezione Tracciamento Etico */}
+                    {currentPage === 'ethical' && (
+                        <section className="space-y-8">
+                            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6 text-center bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-700">Tracciabilità Etica e Impatto Consapevole</h2>
+                            <p className="text-gray-600 text-center mb-8 text-lg">Scopri l'impatto dei tuoi acquisti e trova alternative sostenibili.</p>
+
+                            {/* Dashboard Impatto Etico */}
+                            <div className="bg-gradient-to-br from-purple-500 to-pink-600 text-white p-8 rounded-2xl shadow-xl flex flex-col items-center justify-center">
+                                <p className="text-2xl font-semibold opacity-90 mb-4">Impatto Cumulativo della Community</p>
+                                <p className="text-6xl md:text-7xl font-extrabold my-4 animate-bounce-slow">{cumulativeImpact} kg</p>
+                                <p className="text-base opacity-90 text-center">di CO2 equivalente risparmiata grazie alle scelte consapevoli.</p>
+                                {/* Fioritura Collettiva - Alberi Piantati */}
+                                <p className="text-xl font-semibold mt-6">Alberi Piantati dalla Community: <span className="font-extrabold">{treesPlanted}</span></p>
+                            </div>
+
+                            <div className="flex flex-col md:flex-row gap-6 mt-8">
+                                <input
+                                    type="text"
+                                    placeholder="Nome prodotto o codice a barre..."
+                                    value={productInput}
+                                    onChange={(e) => {
+                                        setProductInput(e.target.value);
+                                        setShowArOverlay(false); // Nascondi l'overlay AR quando l'input cambia
+                                    }}
+                                    className="flex-grow p-4 border border-gray-300 rounded-xl focus:ring-4 focus:ring-purple-300 focus:border-purple-500 transition-all duration-300 text-lg shadow-sm"
+                                />
+                                <button
+                                    onClick={trackProduct}
+                                    disabled={productLoading}
+                                    className="bg-gradient-to-r from-purple-600 to-pink-700 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:from-purple-700 hover:to-pink-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-lg"
+                                >
+                                    {productLoading ? (
+                                        <svg className="animate-spin h-6 w-6 text-white mr-3" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                    ) : (
+                                        'Traccia Prodotto'
+                                    )}
+                                </button>
+                            </div>
+
+                            {/* Overlay AR Simulato (Fioritura Collettiva - Petali di Cambiamento) */}
+                            {showArOverlay && productAiResponse && (
+                                <div className={`relative mt-8 p-8 bg-gray-100 border border-gray-300 rounded-2xl overflow-hidden ${getArAuraClass(arAuraColor)} transition-shadow duration-500 shadow-xl`}>
+                                    <div className="absolute inset-0 bg-gray-200 opacity-30 flex items-center justify-center">
+                                        {/* Segnaposto per il feed della fotocamera / immagine del prodotto */}
+                                        <span className="text-gray-500 text-xl font-semibold">Simulazione Fotocamera / Prodotto</span>
+                                        {/* Visualizzazione Petali AR */}
+                                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                            <span className="text-yellow-400 text-7xl animate-pulse">🌸</span>
+                                            <span className="text-pink-400 text-6xl animate-bounce-slow" style={{ animationDelay: '0.5s' }}>🌼</span>
+                                            <span className="text-purple-400 text-8xl animate-pulse" style={{ animationDelay: '1s' }}>🌺</span>
+                                        </div>
+                                    </div>
+                                    <div className="relative z-10 p-6 bg-white bg-opacity-90 rounded-xl shadow-lg">
+                                        <p className="text-gray-800 font-medium whitespace-pre-wrap text-base">
+                                            <span className={`text-3xl font-bold ${getEthicalScoreColor(ethicalScore)}`}>
+                                                {ethicalScore > 0 ? `${ethicalScore}/10` : ''}
+                                            </span>
+                                            <br/>
+                                            {productAiResponse}
+                                        </p>
+                                        {/* Overlay dati 3D simulato */}
+                                        {ethicalScore > 0 && (
+                                            <div className="mt-6 text-base font-semibold text-gray-700">
+                                                <p>Dati 3D Simulati sulla Confezione:</p>
+                                                <p><span className="font-bold">CO2:</span> {productAiResponse.match(/CO2: ([\d.]+) kg/)?.[1] || 'N/A'} kg</p>
+                                                <p><span className="font-bold">Acqua:</span> {productAiResponse.match(/Acqua: ([\d.]+) litri/)?.[1] || 'N/A'} litri</p>
+                                            </div>
+                                        )}
+                                        <button
+                                            onClick={takeArSelfie}
+                                            className="mt-6 bg-gradient-to-r from-pink-500 to-red-600 text-white font-bold py-3 px-6 rounded-xl shadow-md hover:from-pink-600 hover:to-red-700 transition-all duration-300 text-base"
+                                        >
+                                            Scatta Selfie AR ({arSmilesCount} sorrisi)
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {productAiResponse && !showArOverlay && ( // Fallback se l'AR non è mostrato
+                                <div className="mt-8 p-6 bg-green-50 border border-green-200 rounded-2xl shadow-md">
+                                    <p className="text-green-800 font-medium whitespace-pre-wrap text-base">
+                                        <span className={`text-3xl font-bold ${getEthicalScoreColor(ethicalScore)}`}>
+                                            {ethicalScore > 0 ? `${ethicalScore}/10` : ''}
+                                        </span>
+                                        <br/>
+                                        {productAiResponse}
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* Gestione dello Stato di Ispirazione Quantistica Simulato */}
+                            <div className="mt-10 p-8 bg-gray-50 rounded-2xl shadow-lg text-center border border-gray-200">
+                                <h3 className="text-2xl font-bold text-gray-800 mb-4">Suggerimento Prodotto Quantistico (Stati Sovrapposti Simulati)</h3>
+                                <p className="text-gray-600 mb-6 text-base">Clicca per "collassare" la sovrapposizione di raccomandazioni in un'unica scelta.</p>
+                                <button
+                                    onClick={collapseQuantumSuggestion}
+                                    className="bg-gradient-to-r from-blue-600 to-cyan-700 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:from-blue-700 hover:to-cyan-800 transition-all duration-300 text-lg"
+                                >
+                                    Genera Raccomandazione
+                                </button>
+                                <p className="mt-6 text-xl font-bold text-blue-800">{quantumSuggestion}</p>
+                            </div>
+
+                            {/* Ricompense d'Impatto - Pulsanti per guadagnare Energie Solari */}
+                            <div className="mt-10 p-8 bg-yellow-50 border border-yellow-200 rounded-2xl shadow-lg text-center">
+                                <h3 className="text-2xl font-bold text-gray-800 mb-4">Ricompense d'Impatto: Guadagna Energie Solari!</h3>
+                                <p className="text-gray-600 mb-6 text-base">Celebra i tuoi progressi con riconoscimenti significativi.</p>
+                                <div className="flex flex-wrap justify-center gap-4">
+                                    <button
+                                        onClick={documentRecycling}
+                                        className="bg-gradient-to-r from-yellow-600 to-orange-700 text-white font-bold py-3 px-6 rounded-xl shadow-md hover:from-yellow-700 hover:to-orange-800 transition-all duration-300 text-base"
+                                    >
+                                        Riciclo Documentato (+10 Energie)
+                                    </button>
+                                    <button
+                                        onClick={doDigitalVolunteering}
+                                        className="bg-gradient-to-r from-orange-600 to-red-700 text-white font-bold py-3 px-6 rounded-xl shadow-md hover:from-orange-700 hover:to-red-800 transition-all duration-300 text-base"
+                                    >
+                                        Volontariato Digitale (+50 Energie)
+                                    </button>
+                                </div>
+                                <div className="mt-6 text-base text-gray-700">
+                                    <p className="font-semibold mb-2">Benefici Esclusivi:</p>
+                                    <ul className="list-disc list-inside text-left mx-auto max-w-xs space-y-1">
+                                        <li>Aura digitale "Guardiano Verde" (sbloccata al Livello 5)</li>
+                                        <li>Coupon per brand sostenibili (disponibili a {solarEnergy >= 100 ? 'breve' : '100 Energie Solari'})</li>
+                                        <li>Biglietti per eventi rigenerativi (disponibili a {solarEnergy >= 250 ? 'breve' : '250 Energie Solari'})</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </section>
+                    )}
+
+                    {/* Sezione Hub Comunitario */}
+                    {currentPage === 'community' && (
+                        <section className="space-y-8">
+                            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6 text-center bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-teal-700">Hub Comunitario: Progetti e Scambio di Competenze</h2>
+                            <p className="text-gray-600 text-center mb-8 text-lg">Connettiti con la tua comunità per un impatto positivo.</p>
+
+                            {/* Fioritura Collettiva - Sfide Comunitarie */}
+                            <div className="bg-purple-50 p-8 rounded-2xl shadow-lg text-center border border-purple-200">
+                                <h3 className="text-2xl font-bold text-gray-800 mb-4">Sfida Comunitaria: #MissioneFioritura</h3>
+                                <p className="text-gray-600 mb-6 text-base">Più contenuti condividi, più sponsor investono in orti urbani!</p>
+                                <div className="w-full bg-gray-200 rounded-full h-6 mb-4 relative overflow-hidden">
+                                    <div className="bg-gradient-to-r from-purple-600 to-pink-600 h-full rounded-full text-white text-sm font-bold flex items-center justify-center transition-all duration-500" style={{ width: `${missionFiorituraProgress}%` }}>
+                                        {missionFiorituraProgress}%
+                                    </div>
+                                    <span className="absolute inset-0 flex items-center justify-center text-gray-800 font-bold text-lg pointer-events-none">
+                                        Progresso: {missionFiorituraProgress}%
+                                    </span>
+                                </div>
+                                <button
+                                    onClick={contributeToChallenge}
+                                    className="bg-gradient-to-r from-purple-600 to-pink-700 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:from-purple-700 hover:to-pink-800 transition-all duration-300 text-lg"
+                                >
+                                    Contribuisci alla Sfida
+                                </button>
+                                {missionFiorituraProgress >= missionFiorituraTarget && (
+                                    <p className="mt-6 text-green-700 font-bold text-lg animate-bounce">Missione Completata! Nuovi orti urbani in arrivo!</p>
+                                )}
+                            </div>
+
+
+                            {/* Proponi un Progetto */}
+                            <div className="bg-gray-50 p-8 rounded-2xl shadow-lg border border-gray-200">
+                                <h3 className="text-2xl font-bold text-gray-800 mb-4">Proponi un Nuovo Progetto</h3>
+                                <form onSubmit={handleAddCommunityProject} className="space-y-6">
+                                    <div>
+                                        <label htmlFor="projectName" className="block text-base font-medium text-gray-700 mb-2">Nome Progetto</label>
+                                        <input
+                                            type="text"
+                                            id="projectName"
+                                            value={communityProjectName}
+                                            onChange={(e) => setCommunityProjectName(e.target.value)}
+                                            className="mt-1 block w-full p-3 border border-gray-300 rounded-xl focus:ring-4 focus:ring-indigo-300 focus:border-indigo-500 transition-all duration-300 text-base shadow-sm"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="projectDesc" className="block text-base font-medium text-gray-700 mb-2">Descrizione</label>
+                                        <textarea
+                                            id="projectDesc"
+                                            value={communityProjectDesc}
+                                            onChange={(e) => setCommunityProjectDesc(e.target.value)}
+                                            rows="4"
+                                            className="mt-1 block w-full p-3 border border-gray-300 rounded-xl focus:ring-4 focus:ring-indigo-300 focus:border-indigo-500 transition-all duration-300 text-base shadow-sm"
+                                            required
+                                        ></textarea>
+                                    </div>
+                                    <button
+                                        type="submit"
+                                        className="bg-gradient-to-r from-green-600 to-teal-700 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:from-green-700 hover:to-teal-800 transition-all duration-300 text-lg"
+                                    >
+                                        Aggiungi Progetto
+                                    </button>
+                                </form>
+                            </div>
+
+                            {/* Progetti Esistenti */}
+                            <div className="mt-10">
+                                <h3 className="text-2xl font-bold text-gray-800 mb-6">Progetti Comunitari Attivi</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {communityProjects.map((project) => (
+                                        <div key={project.id} className="bg-white p-6 rounded-2xl shadow-md border border-gray-200 transform hover:scale-102 transition-transform duration-300">
+                                            <h4 className="text-xl font-bold text-gray-900 mb-2">{project.name}</h4>
+                                            <p className="text-gray-700 text-base mt-1">{project.description}</p>
+                                            <p className="text-gray-500 text-sm mt-3">Competenze richieste: <span className="font-semibold">{project.skillsNeeded.join(', ')}</span></p>
+                                            <button className="mt-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-base py-2.5 px-5 rounded-lg shadow-md hover:from-blue-600 hover:to-indigo-700 transition-colors duration-300">
+                                                Maggiori Dettagli
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Scambio di Competenze */}
+                            <div className="mt-10 p-8 bg-gray-50 rounded-2xl shadow-lg border border-gray-200">
+                                <h3 className="text-2xl font-bold text-gray-800 mb-4">Scambio di Competenze (Skill Swapping)</h3>
+                                <p className="text-gray-600 mb-6 text-base">Offri le tue competenze in cambio di altre o per contribuire a progetti.</p>
+                                <div className="space-y-4">
+                                    {skillSwapSuggestions.map((swap) => (
+                                        <div key={swap.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex flex-col md:flex-row justify-between items-start md:items-center">
+                                            <div>
+                                                <p className="font-medium text-gray-900 text-base">{swap.user} offre: <span className="text-indigo-600 font-semibold">{swap.skillOffered}</span></p>
+                                                <p className="text-sm text-gray-700 mt-1">Cerca: <span className="text-purple-600 font-semibold">{swap.skillNeeded}</span></p>
+                                            </div>
+                                            <button className="mt-3 md:mt-0 bg-gradient-to-r from-yellow-500 to-orange-600 text-white text-base py-2 px-4 rounded-lg shadow-md hover:from-yellow-600 hover:to-orange-700 transition-colors duration-300">
+                                                Contatta
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Sonificazione dell'Esecuzione del Codice (Simulata) */}
+                            <div className="mt-10 p-8 bg-gray-50 rounded-2xl shadow-lg text-center border border-gray-200">
+                                <h3 className="text-2xl font-bold text-gray-800 mb-4">Sonificazione Caricamento Dati (Simulato)</h3>
+                                <p className="text-gray-600 mb-6 text-base">Ascolta il feedback audio sul successo o fallimento di un'operazione di caricamento dati.</p>
+                                <button
+                                    onClick={sonifyDataLoad}
+                                    className="bg-gradient-to-r from-teal-600 to-green-700 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:from-teal-700 hover:to-green-800 transition-all duration-300 text-lg"
+                                >
+                                    Simula Caricamento Dati
+                                </button>
+                            </div>
+                        </section>
+                    )}
+
+                    {/* Sezione Spazi Immersivi */}
+                    {currentPage === 'immersive' && (
+                        <section className="space-y-8">
+                            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-cyan-700">Spazi Immersivi per Benessere e Apprendimento (WebXR)</h2>
+                            <p className="text-gray-600 text-center mb-8 text-lg">Immergiti in ambienti virtuali per mindfulness, deep work e visualizzazioni dati 3D.</p>
+
+                            {/* Splitting del Bundle Guidato dalle Emozioni (Simulato) */}
+                            <div className="p-8 bg-gray-50 border border-gray-200 rounded-2xl shadow-lg mb-10 text-center">
+                                <h3 className="text-2xl font-bold text-gray-800 mb-4">UI Adattiva all'Emozione (Simulato)</h3>
+                                <p className="text-gray-600 mb-6 text-base">Seleziona un'emozione per vedere come l'interfaccia si adatterebbe.</p>
+                                <select
+                                    value={userEmotion}
+                                    onChange={(e) => setUserEmotion(e.target.value)}
+                                    className="p-3 border border-gray-300 rounded-xl focus:ring-4 focus:ring-indigo-300 focus:border-indigo-500 transition-all duration-300 text-base shadow-sm"
+                                >
+                                    <option value="neutro">Neutro</option>
+                                    <option value="frustrated">Frustrato</option>
+                                    <option value="focused">Concentrato</option>
+                                </select>
+                                <p className="mt-6 text-xl font-bold text-indigo-800">Interfaccia caricata: <span className="capitalize">{uiVersion}</span></p>
+                                <p className="text-gray-600 text-sm mt-2">Questo simula il caricamento di versioni diverse dell'interfaccia in base al tuo stato emotivo per ottimizzare l'esperienza.</p>
+                            </div>
+
+                            {/* Codice Auto-Riparatore/Adattivo (Simulato) */}
+                            <div className="mt-10 p-8 bg-gray-50 rounded-2xl shadow-lg text-center border border-gray-200">
+                                <h3 className="text-2xl font-bold text-gray-800 mb-4">Codice Auto-Riparatore (Simulato)</h3>
+                                <p className="text-gray-600 mb-6 text-base">Simula un errore e l'auto-correzione del sistema per garantire la stabilità.</p>
+                                <button
+                                    onClick={triggerSimulatedError}
+                                    disabled={simulatedError}
+                                    className="bg-gradient-to-r from-red-600 to-rose-700 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:from-red-700 hover:to-rose-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center mx-auto text-lg"
+                                >
+                                    {simulatedError ? 'Errore in Auto-Correzione...' : 'Simula Errore'}
+                                </button>
+                                {selfHealingMessage && (
+                                    <p className={`mt-6 text-base font-semibold ${simulatedError ? 'text-red-700' : 'text-green-700'}`}>{selfHealingMessage}</p>
+                                )}
+                            </div>
+
+                            {/* Storie in Diretta - "Eco-Hero Live" */}
+                            <div className="mt-10 p-8 bg-green-50 border border-green-200 rounded-2xl shadow-lg text-center">
+                                <h3 className="text-2xl font-bold text-gray-800 mb-4">Storie in Diretta: Eco-Hero Live</h3>
+                                <p className="text-gray-600 mb-6 text-base">Segui agricoltori che trasformano deserti in foreste, interagisci per sbloccare donazioni.</p>
+                                <div className="relative w-full h-56 bg-gray-300 rounded-xl flex items-center justify-center mb-6 overflow-hidden shadow-inner">
+                                    <span className="text-gray-600 text-xl font-semibold">Simulazione Live Stream</span>
+                                    <div className="absolute top-4 right-4 bg-red-500 text-white text-sm px-3 py-1.5 rounded-full font-bold animate-pulse">LIVE</div>
+                                    <div className="absolute bottom-4 left-4 text-white text-base bg-black bg-opacity-60 px-3 py-1.5 rounded-lg font-medium">
+                                        Visualizzazioni: {ecoHeroLiveViews}
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={viewEcoHeroLive}
+                                    className="bg-gradient-to-r from-green-600 to-lime-700 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:from-green-700 hover:to-lime-800 transition-all duration-300 text-lg"
+                                >
+                                    Guarda Eco-Hero Live
+                                </button>
+                                <p className="mt-6 text-base text-gray-700">
+                                    Hai contribuito a finanziare <span className="font-bold text-green-700">{waterSourcesFunded}</span> fonte/i potabile/i in Africa.
+                                </p>
+                            </div>
+
+                            {/* Coinvolgimento Consapevole - "Tempo Ben Speso" */}
+                            <div className="mt-10 p-8 bg-blue-50 border border-blue-200 rounded-2xl shadow-lg text-center">
+                                <h3 className="text-2xl font-bold text-gray-800 mb-4">Coinvolgimento Consapevole: Tempo Ben Speso</h3>
+                                <p className="text-gray-600 mb-6 text-base">Ogni minuto nell'app genera valore tangibile.</p>
+                                <p className="text-3xl font-bold text-blue-800 mb-4">Foglie Digitali: {digitalLeaves}</p>
+                                <p className="text-lg text-gray-700 mb-4">Raccogli 1.000 foglie per proteggere 1 ettaro di Amazzonia.</p>
+                                <p className="text-xl font-bold text-green-700">Ettari di Amazzonia Protetti: {amazonProtectedHectares}</p>
+                                <div className="mt-6 text-base text-gray-700">
+                                    <h4 className="font-semibold mb-3">Crescita Personale:</h4>
+                                    <ul className="list-disc list-inside text-left mx-auto max-w-xs space-y-2">
+                                        <li><span className="font-medium">Meditazioni Guidate:</span> {meditationUnlocked ? <span className="text-green-600 font-bold">Sbloccate!</span> : `Sblocca a 200 Foglie (${200 - digitalLeaves} rimanenti)`}</li>
+                                        <li><span className="font-medium">Corsi di Eco-Design:</span> {ecoDesignCourseUnlocked ? <span className="text-green-600 font-bold">Sbloccati!</span> : `Sblocca a 500 Foglie (${500 - digitalLeaves} rimanenti)`}</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+
+                            <div className="p-10 bg-gradient-to-br from-blue-100 to-cyan-100 border border-blue-200 rounded-3xl flex flex-col items-center justify-center shadow-xl">
+                                <ImmersiveIcon className="w-28 h-28 text-blue-500 mb-6" />
+                                <p className="text-2xl font-bold text-blue-800 mb-4">Esperienze WebXR in Sviluppo!</p>
+                                <p className="text-blue-700 mt-2 text-lg text-center max-w-md">Prepara i tuoi visori VR o AR! Stiamo creando ambienti immersivi per:</p>
+                                <ul className="list-disc list-inside text-blue-700 mt-4 text-left text-base space-y-2">
+                                    <li>Stanze virtuali per il deep work con suoni 3D spaziali avvolgenti.</li>
+                                    <li>Meditazioni guidate in ambienti naturali generati proceduralmente.</li>
+                                    <li>Visualizzazioni dati dell'impatto ambientale in 3D interattivo.</li>
+                                </ul>
+                                <p className="text-blue-600 mt-6 text-base font-semibold">Resta sintonizzato per un'immersione totale nel tuo benessere e nella tua crescita!</p>
+                            </div>
+                        </section>
+                    )}
+                </div>
+            </main>
+
+            {/* Piè di pagina */}
+            <footer className="bg-gray-800 text-white text-center p-6 rounded-t-3xl mt-10 shadow-inner-top">
+                <p className="text-lg">&copy; {new Date().getFullYear()} EvoFlow AI. Tutti i diritti riservati.</p>
+                <p className="text-sm text-gray-400 mt-2">Costruito con passione per un futuro più consapevole.</p>
+            </footer>
+        </div>
+    );
+};
+
+export default App;
